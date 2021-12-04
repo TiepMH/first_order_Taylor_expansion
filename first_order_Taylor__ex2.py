@@ -1,8 +1,5 @@
 ''' Example 2 '''
-
 import numpy as np
-
-
 def f_and_LowerBound(A_PSD, z_column, z0_column):
     """ z and z0 are column vectors """
     z = z_column
@@ -16,12 +13,21 @@ def f_and_LowerBound(A_PSD, z_column, z0_column):
     """ Calculate the function f """
     f = zH @ A @ z
     """ Calculate the lower bound of f """
-    f_lower = z0H @ A @ z \
-        + z0T @ AT @ (z.conj()) \
-        - z0T @ AT @ (z0.conj())
-    # np.real(a + 0j) = a
-    f = np.real(f)
-    f_lower = np.real(f_lower)
+    grad_z0 = AT @ (z0.conj())
+    grad_z0Conj = A @ z0
+    dz = z - z0
+    dzConj = z.conj() - z0.conj()
+    f_lower = z0H @ A @ z0 \
+              + (grad_z0.T) @ dz \
+              + (grad_z0Conj.T) @ dzConj      
+    """ NOTE:
+    f_lower can also be calculated as follows:
+    - First, we calculate df = z0H @ A @ dz + z0T @ AT @ (dz.conj())
+    - Then, we calculate f_at_z0 = z0H @ A @ z0
+    - Finally, we have f_lower = f_at_z0 + df
+    """
+    f = np.real(f)  # np.real(a + 0j) = a
+    f_lower = np.real(f_lower)  # np.real(a + 0j) = a
     return f[0][0], f_lower[0][0]
 
 

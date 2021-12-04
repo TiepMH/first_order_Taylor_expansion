@@ -1,8 +1,5 @@
 ''' Example 1 '''
-
 import numpy as np
-
-
 def f_and_LowerBound(A_PSD, z_column, z0_column):
     """ z and z0 are column vectors, which are real-valued """
     z = z_column
@@ -15,7 +12,22 @@ def f_and_LowerBound(A_PSD, z_column, z0_column):
     """ Calculate the function f """
     f = zT @ A @ z
     """ Calculate the lower bound of f """
-    f_lower = z0T @ (A + AT) @ z - z0T @ AT @ z0
+    # f_lower = z0T @ (A + AT) @ z - z0T @ AT @ z0
+    grad_z0 = (A + AT) @ z0
+    grad_z0Conj = np.zeros([len(z0), 1])
+    dz = z - z0
+    dzConj = z.conj() - z0.conj()
+    f_lower = z0T @ A @ z0 \
+              + (grad_z0.T) @ dz \
+              + (grad_z0Conj.T) @ dzConj
+    """ NOTE:
+        f_lower can also be calculated as follows:
+        - First, we calculate df = z0T @ (A + AT) @ dz
+        - Then, we calculate f_at_z0 = z0T @ A @ z0
+        - Finally, we calculate f_lower = f_at_z0 + df
+        In short, we have
+        f_lower = z0T @ A @ z0 + z0T @ (A + AT) @ dz
+    """
     # np.real(a + 0j) = a
     f = np.real(f)
     f_lower = np.real(f_lower)
@@ -24,7 +36,7 @@ def f_and_LowerBound(A_PSD, z_column, z0_column):
 
 """ MAIN PROGRAM """
 n_violations = 0
-for i in range(100):
+for i in range(1000):
     N = 4
     temp = np.random.randn(N, N) + 1j*np.random.randn(N, N)
     A = temp @ (temp.conj().T)  # A is now a positive semidefinite
